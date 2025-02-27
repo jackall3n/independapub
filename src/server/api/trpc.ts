@@ -76,7 +76,7 @@ export const createCallerFactory = t.createCallerFactory;
  *
  * @see https://trpc.io/docs/router
  */
-export const createTRPCRouter = t.router;
+export const router = t.router;
 
 /**
  * Middleware for timing procedure execution and adding an artificial delay in development.
