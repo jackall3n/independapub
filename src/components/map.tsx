@@ -13,7 +13,9 @@ import { env } from "~/env";
 import {
   clusterCountLayer,
   clusterLayer,
-  venuesLayer, venuesTextLayer,
+  venuesIconLayer,
+  venuesLayer,
+  venuesTextLayer,
 } from "~/components/map-layer";
 import { MapMouseEvent } from "mapbox-gl";
 import { Feature, FeatureCollection } from "geojson";
@@ -74,8 +76,6 @@ export function Map({ markers, onMoveEnd, ref, initialState }: MapProps) {
       layers: ["venues"],
     });
 
-    console.log({ features });
-
     const [feature] = features;
 
     if (!feature?.id) {
@@ -86,8 +86,6 @@ export function Map({ markers, onMoveEnd, ref, initialState }: MapProps) {
       { source: "venues", id: feature.id },
       { selected: !feature.state?.selected },
     );
-
-    console.log({ feature });
   };
 
   return (
@@ -111,6 +109,7 @@ export function Map({ markers, onMoveEnd, ref, initialState }: MapProps) {
           <Layer {...clusterLayer} />
           <Layer {...clusterCountLayer} />
           <Layer {...venuesLayer} />
+          <Layer {...venuesIconLayer} />
           <Layer {...venuesTextLayer} />
         </Source>
       </Mapbox>

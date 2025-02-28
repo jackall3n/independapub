@@ -68,10 +68,10 @@ export default function Home() {
         const [longitude, latitude] = venue.coordinates as [number, number];
         const isIndependent = venue.company === "Independent";
         const color = isIndependent
-          ? "#06c63d"
+          ? "#20d355"
           : !venue.company
             ? "#9c9c9c"
-            : "#c30b0b";
+            : "#ed5252";
 
         return {
           id: venue.id,
@@ -79,7 +79,8 @@ export default function Home() {
           longitude,
           latitude,
           color,
-          textColor: isIndependent ? "#06c63d" : "white",
+          textColor: color,
+          isIndependent,
           opacity: venue.company ? 1 : 0.5,
           priority: venue.company ? 0 : 1,
         };
