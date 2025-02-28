@@ -4,11 +4,35 @@ import type { MapRef, ViewState } from "react-map-gl/mapbox";
 import { VenueList } from "~/components/venue-list";
 import { Map } from "~/components/map";
 import { api } from "~/trpc/react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import orderBy from "lodash/orderBy";
+import * as turf from "@turf/turf";
 
 export default function Home() {
   const [venues] = api.venues.list.useSuspenseQuery();
+  const [userLocation, setUserLocation] = useState<GeolocationCoordinates>();
+
+  const ordered = useMemo(() => {
+    if (!userLocation) {
+      return orderBy(venues, "name");
+    }
+
+    const from = turf.point([userLocation.longitude, userLocation.latitude]);
+
+    const mapped = venues.map((venue) => {
+      const point = turf.point(venue.coordinates);
+
+      return {
+        ...venue,
+        distance: turf.distance(from, point, { units: "miles" }),
+      };
+    });
+
+    return orderBy(mapped, "distance");
+  }, [venues, userLocation]);
+
+  console.log({ userLocation });
 
   const ref = useRef<MapRef>(null);
 
@@ -18,8 +42,8 @@ export default function Home() {
 
   const initialState = useMemo(
     () => ({
-      latitude: Number(searchParams.get("lat") || 50.827778),
-      longitude: Number(searchParams.get("lng") || -0.152778),
+      latitude: Number(searchParams.get("lat") || 50.82367),
+      longitude: Number(searchParams.get("lng") || -0.1382),
       zoom: Number(searchParams.get("zoom") || 15),
     }),
     [],
@@ -64,7 +88,7 @@ export default function Home() {
 
   const markers = useMemo(
     () =>
-      venues.map((venue) => {
+      ordered.map((venue) => {
         const [longitude, latitude] = venue.coordinates as [number, number];
         const isIndependent = venue.company === "Independent";
         const color = isIndependent
@@ -85,13 +109,13 @@ export default function Home() {
           priority: venue.company ? 0 : 1,
         };
       }),
-    [venues],
+    [ordered],
   );
 
   return (
     <>
-      <div className="absolute w-full divide-y sm:relative">
-        <VenueList venues={venues} />
+      <div className="scrollbar scrollbar-thumb-muted-foreground scrollbar-track-transparent absolute w-full divide-y h-full overflow-y-auto z-10 sm:relative">
+        <VenueList venues={ordered} />
       </div>
 
       <div className="sticky top-0 h-screen">
@@ -100,6 +124,7 @@ export default function Home() {
           initialState={initialState}
           onMoveEnd={onMoveEnd}
           markers={markers}
+          onUserLocation={setUserLocation}
         />
       </div>
     </>

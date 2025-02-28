@@ -4,4 +4,6 @@ import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 type RouterInput = inferRouterInputs<AppRouter>;
 type RouterOutput = inferRouterOutputs<AppRouter>;
 
-export type Venue = RouterOutput['venues']['list'][number]
+export type Venue = RouterOutput['venues']['list'][number] & {
+    distance?: number;
+}

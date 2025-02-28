@@ -3,6 +3,7 @@
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import Mapbox, {
+  GeolocateControl,
   Layer,
   type MapRef,
   Source,
@@ -19,7 +20,7 @@ import {
 } from "~/components/map-layer";
 import { MapMouseEvent } from "mapbox-gl";
 import { Feature, FeatureCollection } from "geojson";
-import { m } from "motion/react";
+import { cubicBezier, motion } from "motion/react";
 
 interface MapProps {
   markers: Array<{
@@ -33,6 +34,7 @@ interface MapProps {
   ref: RefObject<MapRef>;
 
   onMoveEnd?(state: ViewState): void;
+  onUserLocation?(coordinates: GeolocationCoordinates): void;
 
   initialState: {
     latitude: number;
@@ -41,7 +43,13 @@ interface MapProps {
   };
 }
 
-export function Map({ markers, onMoveEnd, ref, initialState }: MapProps) {
+export function Map({
+  markers,
+  onMoveEnd,
+  ref,
+  initialState,
+  onUserLocation,
+}: MapProps) {
   const [isLoaded, setLoaded] = useState(false);
 
   const data = useMemo<FeatureCollection>(() => {
@@ -89,30 +97,38 @@ export function Map({ markers, onMoveEnd, ref, initialState }: MapProps) {
   };
 
   return (
-    <m.div
-      className="absolute inset-0 flex-1 overflow-hidden"
-      animate={{ opacity: isLoaded ? 1 : 0 }}
-      transition={{ delay: 1000 }}
-    >
-      <Mapbox
-        mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
-        mapStyle="mapbox://styles/mapbox/dark-v11"
-        initialViewState={{
-          ...initialState,
-        }}
-        onLoad={(e) => setLoaded(true)}
-        ref={ref}
-        onClick={onClick}
-        onMoveEnd={(e) => onMoveEnd?.(e.viewState)}
+    <div className="absolute inset-0 overflow-hidden">
+      <motion.div
+        className="h-full w-full"
+        initial={{ opacity: 0, scale: 1.1 }}
+        animate={{ opacity: isLoaded ? 1 : 0, scale: isLoaded ? 1 : 1.1 }}
+        transition={{ ease: cubicBezier(0.22, 1, 0.36, 1), duration: 1.5 }}
       >
-        <Source type="geojson" id="venues" data={data}>
-          <Layer {...clusterLayer} />
-          <Layer {...clusterCountLayer} />
-          <Layer {...venuesLayer} />
-          <Layer {...venuesIconLayer} />
-          <Layer {...venuesTextLayer} />
-        </Source>
-      </Mapbox>
-    </m.div>
+        <Mapbox
+          mapboxAccessToken={env.NEXT_PUBLIC_MAPBOX_TOKEN}
+          mapStyle="mapbox://styles/mapbox/dark-v11"
+          initialViewState={{
+            ...initialState,
+          }}
+          onLoad={() => setLoaded(true)}
+          ref={ref}
+          onClick={onClick}
+          onMoveEnd={(e) => onMoveEnd?.(e.viewState)}
+        >
+          <GeolocateControl
+            position="bottom-right"
+            onTrackUserLocationStart={(e) => console.log({ e })}
+            onGeolocate={(e) => onUserLocation?.(e.coords)}
+          />
+
+          <Source type="geojson" id="venues" data={data}>
+            <Layer {...clusterLayer} />
+            <Layer {...clusterCountLayer} />
+            <Layer {...venuesLayer} />
+            <Layer {...venuesTextLayer} />
+          </Source>
+        </Mapbox>
+      </motion.div>
+    </div>
   );
 }

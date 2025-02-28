@@ -11,14 +11,14 @@ interface VenueListProps {
 export function VenueList({ venues }: VenueListProps) {
   return (
     <>
-      <div className="sm:bg-background sticky top-0 z-10 flex space-x-2 p-4">
+      <div className="sm:bg-background z-10 sticky top-0 flex space-x-2 p-4">
         <Input placeholder="Search Independapub" className="rounded-full bg-background" />
         <Button size="icon" variant="outline" className="shrink-0 rounded-full">
           <FilterIcon />
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 divide-y max-sm:hidden">
+      <div className="grid grid-cols-1 divide-y bg-background max-sm:mt-[50vh]">
         {venues.map((venue) => (
           <VenueListItem key={venue.id} venue={venue} />
         ))}

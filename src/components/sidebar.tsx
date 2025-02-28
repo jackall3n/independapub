@@ -3,7 +3,7 @@ import { BeerIcon, FactoryIcon, HomeIcon } from "lucide-react";
 
 export function Sidebar() {
   return (
-    <div className="sticky top-0 h-screen">
+    <div>
       <div className="p-4">
         <Button size="icon" variant="ghost">
           <BeerIcon />
